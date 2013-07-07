@@ -1,0 +1,6 @@
+*.o
+*.so
+*.out
+*.core
+*.swp
+*.pro.user
