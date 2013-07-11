@@ -86,7 +86,6 @@ struct ZFSStats
 {
     bool HasArc() const
     {
-        uint64_t ars_size = 0;
         size_t size = sizeof(arc_size);
         return (sysctlbyname("kstat.zfs.misc.arcstats.size", 
                          (void*)&arc_size, &size,NULL, 0) == 0 && arc_size != 0);

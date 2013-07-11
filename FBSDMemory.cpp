@@ -49,7 +49,7 @@ void FBSDMemory::Refresh()
     ui->inactive->setText(PrettySize(m_VMStats.inactive, m_PageInfo.shift));
     ui->active->setText(PrettySize(m_VMStats.active, m_PageInfo.shift));
     ui->wired->setText(PrettySize(m_VMStats.wire, m_PageInfo.shift));
-    ui->buf->setText(PrettySize(m_VMStats.buf, m_PageInfo.shift));
+    ui->buf->setText(PrettySize(m_VMStats.buf));
     ui->cache->setText(PrettySize(m_VMStats.cache, m_PageInfo.shift));
 
     if (m_ZFSStats.HasArc()) {
@@ -83,12 +83,12 @@ void FBSDMemory::Refresh()
     ratios.reserve(6);
     {
         double total = m_VMStats.free + m_VMStats.inactive
-                + m_VMStats.active + m_VMStats.wire + m_VMStats.buf + m_VMStats.cache;
+                + m_VMStats.active + m_VMStats.wire + (m_VMStats.buf/m_PageInfo.size) + m_VMStats.cache;
         ratios << m_VMStats.free / total;
         ratios << m_VMStats.inactive / total;
         ratios << m_VMStats.active / total;
         ratios << m_VMStats.wire / total;
-        ratios << m_VMStats.buf / total;
+        ratios << (m_VMStats.buf/m_PageInfo.size) / total;
         ratios << m_VMStats.cache / total;
 
     }
