@@ -189,7 +189,7 @@ public:
         for (int i = 0; i < nproc; ++i) {
             const struct kinfo_proc& info = pbase[i];
             if (!m_procfilter.empty()) {
-                std::string name(info.ki_tdname);
+                std::string name(info.ki_comm);
                 bool found = false;
                 for (size_t i = 0; i < m_procfilter.size(); ++i) {
                     if (name.find(m_procfilter[i]) != std::string::npos) {
@@ -208,7 +208,7 @@ public:
         };
 
         auto cmp_name = [](const struct kinfo_proc& a, const struct kinfo_proc& b) -> bool { 
-            int ret = strcmp(a.ki_tdname, b.ki_tdname);
+            int ret = strcmp(a.ki_comm, b.ki_comm);
             if (ret != 0)
                 return ret < 0;
             else

@@ -86,7 +86,7 @@ void MainWindow::UpdateActivity()
     for (size_t i = 0; i < procinfo.size(); ++i) {
         auto item = ui->processTree->topLevelItem(i);
         item->setText(0, QString::number(procinfo[i].ki_pid));
-        item->setText(1, QString::fromUtf8(procinfo[i].ki_tdname));
+        item->setText(1, QString::fromUtf8(procinfo[i].ki_comm));
 
         item->setText(2, PrettySize(procinfo[i].ki_rssize, m_PageInfo.shift));
         item->setTextAlignment(2, Qt::AlignRight);
