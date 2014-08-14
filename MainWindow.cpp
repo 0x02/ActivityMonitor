@@ -100,7 +100,7 @@ void MainWindow::UpdateActivity()
         item->setText(5, PrettySize(procinfo[i].ki_dsize, m_PageInfo.shift));
         item->setTextAlignment(5, Qt::AlignRight);
 
-        item->setText(6, QString::number(procinfo[i].ki_ssize));
+        item->setText(6, QString::number(procinfo[i].ki_numthreads));
 
         if (pidsets.contains(item->text(0))) {
             item->setSelected(true);
