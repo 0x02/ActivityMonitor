@@ -15,13 +15,14 @@ void PieWidget::paintEvent(QPaintEvent*)
 
     const double size = width();
     const double radius = size/2;
-    const double margin = 8;
+    const double margin = 6;
     const QRectF rect(margin/2, margin/2, size-margin, size-margin);
     const QRectF bgRect(0, 0, size, size);
 
+    const auto& bgcolor = palette().button().color();
     QRadialGradient gradient(radius, radius, radius, radius, radius, 0);
-    gradient.setColorAt(1-margin/size, QColor("Silver"));
-    gradient.setColorAt(1, palette().background().color());
+    gradient.setColorAt(1-margin/size, bgcolor.darker(130));
+    gradient.setColorAt(1, bgcolor);
     painter.setBrush(gradient);
     painter.drawEllipse(bgRect);
 
