@@ -83,6 +83,11 @@ void MainWindow::UpdateActivity()
         }
     }
 
+    typedef decltype(procinfo[0]) proc_t;
+    auto pcpu = [](const proc_t& proc) -> int {
+        return 100 * proc.ki_pctcpu / FSCALE;
+    };
+
     for (size_t i = 0; i < procinfo.size(); ++i) {
         auto item = ui->processTree->topLevelItem(i);
         item->setText(0, QString::number(procinfo[i].ki_pid));
@@ -91,7 +96,7 @@ void MainWindow::UpdateActivity()
         item->setText(2, PrettySize(procinfo[i].ki_rssize, m_PageInfo.shift));
         item->setTextAlignment(2, Qt::AlignRight);
 
-        item->setText(3, QString::number(procinfo[i].ki_pctcpu));
+        item->setText(3, QString::number(pcpu(procinfo[i])));
         item->setTextAlignment(3, Qt::AlignRight);
 
         item->setText(4, PrettySize(procinfo[i].ki_tsize, m_PageInfo.shift));
