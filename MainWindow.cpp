@@ -1,9 +1,13 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 
-#include "FBSDMemory.h"
-
 #include "FormatSize.h"
+
+#define FREEBSD
+
+#ifdef FREEBSD
+#include "FBSDMemory.h"
+#endif
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -25,18 +29,21 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {    
     m_Timer.stop();
-    delete ui;
     m_KVM.Close();
+    delete ui;
 }
 
 void MainWindow::SetupTabs()
 {    
+#ifdef FREEBSD
     FBSDMemory* mem = new FBSDMemory;
     ui->tabWidget->addTab(mem, tr("Memory"));
+#endif
 }
 
 void MainWindow::SlotFilterProc(QString text)
 {
+#ifdef FREEBSD
     if (text.isEmpty()) {
         m_KVM.ClearProcessFilter();
     } else {
@@ -50,6 +57,7 @@ void MainWindow::SlotFilterProc(QString text)
         }
         m_KVM.SetProcessFilter(filter);
     }
+#endif
 }
 
 void MainWindow::UpdateActivity()
@@ -57,25 +65,27 @@ void MainWindow::UpdateActivity()
     int ntab = ui->tabWidget->count();
     for (int i = 0; i < ntab; ++i) {
         IActivity* activity = dynamic_cast<IActivity*>(ui->tabWidget->widget(i));
-        if (activity != NULL)
+        if (activity != nullptr) {
             activity->Refresh();
+        }
     }
 
     m_KVM.UpdateProcessInfo();
     const auto& procinfo = m_KVM.ProcessInfo();
 
-    auto sel = ui->processTree->selectedItems();
-    QSet<QString> pidsets;
-    for (int i = 0; i < sel.size(); ++i) {
-        pidsets.insert(sel[i]->text(0));
+    auto selectedItems = ui->processTree->selectedItems();
+    QSet<QString> selectedPids;
+    for (int i = 0; i < selectedItems.size(); ++i) {
+        selectedPids.insert(selectedItems[i]->text(0));
     }
 
     int n = procinfo.size() - ui->processTree->topLevelItemCount();
     if (n > 0) {
         ui->processTree->setColumnCount(7);
         QList<QTreeWidgetItem *> items;
-        for (int i = 0; i < n; ++i)
+        for (int i = 0; i < n; ++i) {
              items.append(new QTreeWidgetItem());
+        }
         ui->processTree->addTopLevelItems(items);
     } else if (n < 0) {
         for (int i = n; i < 0; ++i) {
@@ -107,7 +117,7 @@ void MainWindow::UpdateActivity()
 
         item->setText(6, QString::number(procinfo[i].ki_numthreads));
 
-        if (pidsets.contains(item->text(0))) {
+        if (selectedPids.contains(item->text(0))) {
             item->setSelected(true);
         } else {
             item->setSelected(false);
