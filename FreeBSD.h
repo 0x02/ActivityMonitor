@@ -162,10 +162,9 @@ public:
         }
     }
 
-    // process info
-    const std::vector<struct kinfo_proc>& ProcessInfo() const
-    {
-        return m_procs;
+    // process filter
+    std::vector<std::string> ProcessFilter() const {
+        return m_procfilter;
     }
 
     void SetProcessFilter(const std::vector<std::string>& filter)
@@ -178,6 +177,12 @@ public:
         m_procfilter.clear();
     }
 
+    // process info
+    const std::vector<struct kinfo_proc>& ProcessInfo() const
+    {
+        return m_procs;
+    }
+
     void UpdateProcessInfo(bool all = false)
     {
         int nproc = 0;
@@ -186,19 +191,20 @@ public:
 
         m_procs.clear();
         m_procs.reserve(nproc);
-        for (int i = 0; i < nproc; ++i) {
-            const struct kinfo_proc& info = pbase[i];
+        for (int iproc = 0; iproc < nproc; ++iproc) {
+            const struct kinfo_proc& info = pbase[iproc];
             if (!m_procfilter.empty()) {
                 std::string name(info.ki_comm);
                 bool found = false;
-                for (size_t i = 0; i < m_procfilter.size(); ++i) {
-                    if (name.find(m_procfilter[i]) != std::string::npos) {
+                for (size_t ifilter = 0; ifilter < m_procfilter.size(); ++ifilter) {
+                    if (name.find(m_procfilter[ifilter]) != std::string::npos) {
                         found = true;
                         break;
                     }
                 }
-                if (!found)
+                if (!found) {
                     continue;
+                }
             }
             m_procs.push_back(info);
         }
@@ -223,8 +229,8 @@ private:
 
     std::vector<struct kvm_swap> m_swaps;
 
-    std::vector<std::string> m_procfilter;
     std::vector<struct kinfo_proc> m_procs;
+    std::vector<std::string> m_procfilter;
 };
 
 }
