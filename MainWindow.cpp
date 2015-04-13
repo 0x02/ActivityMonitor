@@ -95,27 +95,27 @@ void MainWindow::UpdateActivity()
 
     typedef decltype(procinfo[0]) proc_t;
     auto pcpu = [](const proc_t& proc) -> int {
-        return 100 * proc.ki_pctcpu / FSCALE;
+        return 100 * proc->ki_pctcpu / FSCALE;
     };
 
     for (size_t i = 0; i < procinfo.size(); ++i) {
         auto item = ui->processTree->topLevelItem(i);
-        item->setText(0, QString::number(procinfo[i].ki_pid));
-        item->setText(1, QString::fromUtf8(procinfo[i].ki_comm));
+        item->setText(0, QString::number(procinfo[i]->ki_pid));
+        item->setText(1, QString::fromUtf8(procinfo[i]->ki_comm));
 
-        item->setText(2, PrettySize(procinfo[i].ki_rssize, m_PageInfo.shift));
+        item->setText(2, PrettySize(procinfo[i]->ki_rssize, m_PageInfo.shift));
         item->setTextAlignment(2, Qt::AlignRight);
 
         item->setText(3, QString::number(pcpu(procinfo[i])));
         item->setTextAlignment(3, Qt::AlignRight);
 
-        item->setText(4, PrettySize(procinfo[i].ki_tsize, m_PageInfo.shift));
+        item->setText(4, PrettySize(procinfo[i]->ki_tsize, m_PageInfo.shift));
         item->setTextAlignment(4, Qt::AlignRight);
 
-        item->setText(5, PrettySize(procinfo[i].ki_dsize, m_PageInfo.shift));
+        item->setText(5, PrettySize(procinfo[i]->ki_dsize, m_PageInfo.shift));
         item->setTextAlignment(5, Qt::AlignRight);
 
-        item->setText(6, QString::number(procinfo[i].ki_numthreads));
+        item->setText(6, QString::number(procinfo[i]->ki_numthreads));
 
         if (selectedPids.contains(item->text(0))) {
             item->setSelected(true);

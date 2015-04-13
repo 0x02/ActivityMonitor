@@ -24,7 +24,7 @@ namespace FreeBSD {
 static inline void GetSysctl(const char* name, void* ptr, size_t len)
 {
     size_t nlen = len;
-    if (sysctlbyname(name, ptr, &nlen, NULL, 0) == -1) {
+    if (sysctlbyname(name, ptr, &nlen, nullptr, 0) == -1) {
         fprintf(stderr, "GetSysctl(): sysctl(%s...) failed: %s\n", name, strerror(errno));
         return;
     }    
@@ -88,7 +88,7 @@ struct ZFSStats
     {
         size_t size = sizeof(arc_size);
         return (sysctlbyname("kstat.zfs.misc.arcstats.size", 
-                         (void*)&arc_size, &size,NULL, 0) == 0 && arc_size != 0);
+                         (void*)&arc_size, &size,nullptr, 0) == 0 && arc_size != 0);
     }
     void Update()
     {
@@ -115,21 +115,21 @@ class KVM
 {
 public:
     KVM():
-        m_kd(NULL)
+        m_kd(nullptr)
     {
     }
 
     bool Open()
     {
-        m_kd = kvm_open(NULL, _PATH_DEVNULL, NULL, O_RDONLY, "KVM::Open()");
-        return (m_kd != NULL);
+        m_kd = kvm_open(nullptr, _PATH_DEVNULL, nullptr, O_RDONLY, "KVM::Open()");
+        return (m_kd != nullptr);
     }
 
     void Close()
     {
-        if (m_kd != NULL) {
+        if (m_kd != nullptr) {
             kvm_close(m_kd);
-            m_kd = NULL;
+            m_kd = nullptr;
         }
     }
 
@@ -178,26 +178,31 @@ public:
     }
 
     // process info
-    const std::vector<struct kinfo_proc>& ProcessInfo() const
+    const std::vector<const struct kinfo_proc*>& ProcessInfo() const
     {
         return m_procs;
     }
 
     void UpdateProcessInfo(bool all = false)
     {
-        int nproc = 0;
-        struct kinfo_proc* pbase = 
-            kvm_getprocs(m_kd, all ? KERN_PROC_ALL : KERN_PROC_PROC, 0, &nproc);
+        if (m_kd == nullptr) {
+            return;
+        }
 
         m_procs.clear();
+        int nproc = 0;
+        auto pbase = kvm_getprocs(m_kd, all ? KERN_PROC_ALL : KERN_PROC_PROC, 0, &nproc);
+        if (pbase == nullptr) {
+            return;
+        }
         m_procs.reserve(nproc);
         for (int iproc = 0; iproc < nproc; ++iproc) {
-            const struct kinfo_proc& info = pbase[iproc];
+            const auto info = pbase + iproc;
             if (!m_procfilter.empty()) {
-                std::string name(info.ki_comm);
+                std::string name(info->ki_comm);
                 bool found = false;
-                for (size_t ifilter = 0; ifilter < m_procfilter.size(); ++ifilter) {
-                    if (name.find(m_procfilter[ifilter]) != std::string::npos) {
+                for (const auto& filter: m_procfilter) {
+                    if (name.find(filter) != std::string::npos) {
                         found = true;
                         break;
                     }
@@ -209,16 +214,18 @@ public:
             m_procs.push_back(info);
         }
 
-        auto cmp_pid = [](const struct kinfo_proc& a, const struct kinfo_proc& b) -> bool { 
-            return a.ki_pid < b.ki_pid;
+        typedef const struct kinfo_proc* procitem_t;
+
+        auto cmp_pid = [](procitem_t a, procitem_t b) -> bool { 
+            return a->ki_pid < b->ki_pid;
         };
 
-        auto cmp_name = [](const struct kinfo_proc& a, const struct kinfo_proc& b) -> bool { 
-            int ret = strcmp(a.ki_comm, b.ki_comm);
+        auto cmp_name = [](procitem_t a, procitem_t b) -> bool { 
+            int ret = strcmp(a->ki_comm, b->ki_comm);
             if (ret != 0)
                 return ret < 0;
             else
-                return a.ki_pid < b.ki_pid;
+                return a->ki_pid < b->ki_pid;
         };
 
         std::sort(m_procs.begin(), m_procs.end(), cmp_name);
@@ -229,7 +236,7 @@ private:
 
     std::vector<struct kvm_swap> m_swaps;
 
-    std::vector<struct kinfo_proc> m_procs;
+    std::vector<const struct kinfo_proc*> m_procs;
     std::vector<std::string> m_procfilter;
 };
 
