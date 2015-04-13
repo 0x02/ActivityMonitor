@@ -12,8 +12,8 @@ FBSDMemory::FBSDMemory(QWidget *parent) :
     ui->inactive->setStyleSheet("QLabel { color: rgb(24, 68, 195); }");
     ui->active->setStyleSheet("QLabel { color: rgb(167, 167, 0); }");
     ui->wired->setStyleSheet("QLabel { color: rgb(165, 19, 0); }");
-    ui->cache->setStyleSheet("QLabel { color: Indigo; }");
-    ui->buf->setStyleSheet("QLabel { color: DimGray; }");
+    ui->cache->setStyleSheet("QLabel { color: DimGray; }");
+    ui->buf->setStyleSheet("QLabel { color: Indigo; }");
 
     m_Pie = new PieWidget();
     m_Pie->resize(80, 80);
