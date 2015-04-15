@@ -114,9 +114,12 @@ struct ZFSStats
 class KVM
 {
 public:
-    KVM():
-        m_kd(nullptr)
-    {
+    KVM() = default;
+    KVM(const KVM&) = delete;
+    KVM& operator=(const KVM&) = delete;
+
+    ~KVM() {
+        Close();
     }
 
     bool Open()
@@ -128,6 +131,8 @@ public:
     void Close()
     {
         if (m_kd != nullptr) {
+            m_swaps.clear();
+            m_procs.clear();
             kvm_close(m_kd);
             m_kd = nullptr;
         }
@@ -189,13 +194,13 @@ public:
             return;
         }
 
-        m_procs.clear();
         int nproc = 0;
         auto pbase = kvm_getprocs(m_kd, all ? KERN_PROC_ALL : KERN_PROC_PROC, 0, &nproc);
         if (pbase == nullptr) {
+            m_procs.clear();
             return;
         }
-        m_procs.reserve(nproc);
+        m_procs.resize(nproc);
         for (int iproc = 0; iproc < nproc; ++iproc) {
             const auto info = pbase + iproc;
             if (!m_procfilter.empty()) {
@@ -211,7 +216,7 @@ public:
                     continue;
                 }
             }
-            m_procs.push_back(info);
+            m_procs[iproc] = info;
         }
 
         typedef const struct kinfo_proc* procitem_t;
@@ -233,10 +238,9 @@ public:
 
 private:
     kvm_t* m_kd = nullptr;
-
     std::vector<struct kvm_swap> m_swaps;
-
     std::vector<const struct kinfo_proc*> m_procs;
+
     std::vector<std::string> m_procfilter;
 };
 
