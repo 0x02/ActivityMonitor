@@ -194,13 +194,13 @@ public:
             return;
         }
 
+        m_procs.clear();
         int nproc = 0;
         auto pbase = kvm_getprocs(m_kd, all ? KERN_PROC_ALL : KERN_PROC_PROC, 0, &nproc);
         if (pbase == nullptr) {
-            m_procs.clear();
             return;
         }
-        m_procs.resize(nproc);
+        m_procs.reserve(nproc);
         for (int iproc = 0; iproc < nproc; ++iproc) {
             const auto info = pbase + iproc;
             if (!m_procfilter.empty()) {
@@ -216,7 +216,7 @@ public:
                     continue;
                 }
             }
-            m_procs[iproc] = info;
+            m_procs.push_back(info);
         }
 
         typedef const struct kinfo_proc* procitem_t;
